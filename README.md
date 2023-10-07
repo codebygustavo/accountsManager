@@ -9,6 +9,7 @@ Você quer gerenciar sua conta.
 - o usuário pode criar sua conta
 - o usuário pode entrar em sua conta
 - o usuário pode depositar um valor em sua conta
+- o usuário pode transferir um valor de sua conta para outra
 - o usuário pode sacar um valor em sua conta
 - o usuário pode encerrar a operação
 - Não é possivel acessar uma conta não criada

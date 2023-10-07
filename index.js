@@ -13,7 +13,7 @@ function operation() {
       type: "list",
       name: "action",
       message: "O que você deseja fazer?",
-      choices: ["Criar conta", "Consultar Saldo", "Depositar", "Sacar", "Sair"],
+      choices: ["Criar conta", "Consultar Saldo", "Depositar", "Transferir","Sacar","Sair"],
     }
   ])
   .then((answer => {
@@ -25,11 +25,11 @@ function operation() {
       getEaccountBalance()
     }else if(action === 'Depositar'){
       deposit()      
-    }
-    else if(action === 'Sacar'){
+    }else if(action === 'Sacar'){
       withdraw()
-    }
-    else if(action === 'Sair'){
+    }else if(action === "Transferir"){
+      transferAmount()
+    }else if(action === 'Sair'){
       console.log(chalk.bgBlue.black('Obrigado por usar o Accounts!'))
       process.exit()
     }
@@ -98,7 +98,7 @@ function deposit(){
 
       addAmount(AccountName, amount)
 
-    }).catch((err) => console.log(`erro es un error: ${err}`))
+    }).catch((err) => console.log(err))
 
   }).catch((err) => console.log(err))
 
@@ -226,4 +226,78 @@ function removeAmount(accountName, amount){
 
   operation()
 
+}
+
+function transferAmount(){
+  inquirer.prompt([{
+    name: 'transferAccountName',
+    message: 'De que conta deseja transferir?'
+  }]).then((answer) => {
+
+    const transferAccountName = answer['transferAccountName']
+
+    if(!checkAccount(transferAccountName)){
+        console.log(chalk.bgRed('A conta que deseja enviar a transferencia não existe!'))
+        return transferAmount()
+    }
+
+    inquirer.prompt([{
+      name: 'reciverAccountName',
+      message: `Certo ${transferAccountName} para quem deseja transferir?`
+    }]).then((answer) => {
+
+      const reciverAccountName = answer['reciverAccountName']
+
+      if(!checkAccount(reciverAccountName)){
+        console.log(chalk.bgRed('A conta que deseja receber a transferencia não existe!'))
+        return transferAmount()
+      }
+      if(reciverAccountName === transferAccountName){
+        console.log(chalk.bgRed('Não é possivel fazer uma transferencia para você mesmo'))
+        return transferAmount()
+      }
+
+      inquirer.prompt([{
+        name: 'trasnferAmount',
+        message: 'Qual o valor que deseja transferir?'
+      }]).then((answer) => {
+
+        const trasnferAmount = answer['trasnferAmount']
+        const transferAccountData = getAccount(transferAccountName)
+        const ReciverAccountData = getAccount(reciverAccountName)
+
+        if(transferAccountData < trasnferAmount ){
+          console.log(chalk.bgRed('O valor esta indisponivel'))
+          return transferAmount()
+        }
+
+        ReciverAccountData.balance = parseFloat(ReciverAccountData.balance) + parseFloat(trasnferAmount)
+
+        fs.writeFileSync(
+          `accounts/${reciverAccountName}.json`,
+          JSON.stringify(ReciverAccountData),
+          function (err) {
+            console.log(err)
+          }
+        )
+
+        transferAccountData.balance = parseFloat(transferAccountData.balance) - parseFloat(trasnferAmount)
+
+        fs.writeFileSync(
+          `accounts/${transferAccountName}.json`,
+          JSON.stringify(transferAccountData),
+          function (err) {
+            console.log(err)
+          }
+        )
+
+        console.log(chalk.green(`Foi transferido para ${reciverAccountName} o valor de ${trasnferAmount} \n\rO saldo da conta é R$${ReciverAccountData.balance}`))
+
+        return operation()
+
+      }).catch((err) => console.log(err))
+      
+    }).catch((err) => console.log(err))
+
+  }).catch((err) => console.log(err))
 }
