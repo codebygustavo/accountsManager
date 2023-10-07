@@ -28,6 +28,7 @@ function operation() {
     }else if(action === 'Sacar'){
       withdraw()
     }else if(action === "Transferir"){
+      console.log(chalk.yellow('A transferencia, por padrão faz uma cobrança de 1.2% no valor Transferido.'))
       transferAmount()
     }else if(action === 'Sair'){
       console.log(chalk.bgBlue.black('Obrigado por usar o Accounts!'))
@@ -282,6 +283,8 @@ function transferAmount(){
         )
 
         transferAccountData.balance = parseFloat(transferAccountData.balance) - parseFloat(trasnferAmount)
+        let percentage = transferPercentage(trasnferAmount)
+        transferAccountData.balance -= percentage
 
         fs.writeFileSync(
           `accounts/${transferAccountName}.json`,
@@ -291,7 +294,7 @@ function transferAmount(){
           }
         )
 
-        console.log(chalk.green(`Foi transferido para ${reciverAccountName} o valor de ${trasnferAmount} \n\rO saldo da conta é R$${ReciverAccountData.balance}`))
+        console.log(chalk.green(`Foi transferido para ${reciverAccountName} o valor de ${trasnferAmount} \n\rO saldo da conta é R$${ReciverAccountData.balance}, com o desconto de padrão de 1.2% equivalente a R$${percentage}`))
 
         return operation()
 
@@ -300,4 +303,11 @@ function transferAmount(){
     }).catch((err) => console.log(err))
 
   }).catch((err) => console.log(err))
+}
+
+function transferPercentage(amount){
+
+  let percentage = amount* 0.12
+  return percentage
+
 }
